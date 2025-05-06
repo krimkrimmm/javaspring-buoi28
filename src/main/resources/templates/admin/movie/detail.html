@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết phim</title>
+</head>
+<body>
+<h1>Chi tiết phim</h1>
+
+<div>
+    <strong>Tiêu đề:</strong>
+    <p th:text="${movie.title}"></p>
+
+    <strong>Mô tả:</strong>
+    <p th:text="${movie.description}"></p>
+
+    <strong>Poster:</strong>
+    <div th:if="${movie.poster}">
+        <img th:src="${movie.poster}" alt="Poster" width="200"/>
+    </div>
+</div>
+
+<a href="/movies/create">Tạo phim mới</a>
+</body>
+</html>

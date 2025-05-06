@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Movies</title>
+</head>
+<body>
+<h1>Admin Movies</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Movie Name</th>
+        <th>Release Year</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="movie : ${movies.content}">
+        <td th:text="${movie.name}"></td>
+        <td th:text="${movie.releaseYear}"></td>
+        <td>
+            <a th:href="@{/admin/movies/{id}/edit(id=${movie.id})}">Edit</a>
+            <form th:action="@{/admin/movies/{id}/delete(id=${movie.id})}" method="post">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<div>
+    <ul>
+        <li th:each="pageNum : ${#numbers.sequence(1, movies.totalPages)}">
+            <a th:href="@{/admin/movies(page=${pageNum})}" th:text="${pageNum}"></a>
+        </li>
+    </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tạo phim mới</title>
+</head>
+<body>
+<h1>Tạo phim mới</h1>
+
+<form id="createMovieForm">
+    <label>Tiêu đề:</label><br>
+    <input type="text" name="title" required><br><br>
+
+    <label>Mô tả:</label><br>
+    <textarea name="description" required></textarea><br><br>
+
+    <label>Ảnh Poster (URL):</label><br>
+    <input type="text" name="poster"><br><br>
+
+    <button type="submit">Tạo phim</button>
+</form>
+
+<script>
+    document.getElementById("createMovieForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const data = {
+            title: form.title.value,
+            description: form.description.value,
+            poster: form.poster.value
+        };
+
+        fetch("/api/admin/movies", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Tạo phim thất bại");
+            return response.json();
+        })
+        .then(movie => {
+            alert("Tạo phim thành công!");
+            window.location.href = "/movies/" + movie.id;
+        })
+        .catch(err => alert(err.message));
+    });
+</script>
+</body>
+</html>
