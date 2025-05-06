@@ -1,11 +1,5 @@
 package vn.scrip.buoi28.service;
-import vn.scrip.buoi28.entity.Country;
-import vn.scrip.buoi28.entity.Movie;
-import vn.scrip.buoi28.exception.NotFoundException;
-import vn.scrip.buoi28.model.enums.MovieType;
-import vn.scrip.buoi28.model.request.UpsertMovieRequest;
 
-import vn.scrip.buoi28.repository.*;
 import com.github.slugify.Slugify;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,39 +7,62 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
+import vn.scrip.buoi28.entity.Country;
+import vn.scrip.buoi28.entity.Movie;
+import vn.scrip.buoi28.exception.NotFoundException;
+import vn.scrip.buoi28.model.enums.MovieType;
+import vn.scrip.buoi28.model.request.UpsertMovieRequest;
+import vn.scrip.buoi28.repository.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class MovieService {
+
     private final MovieRepository movieRepository;
     private final CountryRepository countryRepository;
     private final GenreRepository genreRepository;
     private final ActorRepository actorRepository;
     private final DirectorRepository directorRepository;
 
+    /**
+     * Lấy danh sách phim nổi bật
+     */
     public List<Movie> findHotMovie(Boolean status, Integer limit) {
         return movieRepository.findHotMovie(status, limit);
     }
 
+    /**
+     * Lấy danh sách phim theo thể loại
+     */
     public Page<Movie> findByType(MovieType type, Boolean status, Integer page, Integer pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by("publishedAt").descending());
-        Page<Movie> moviePage = movieRepository.findByTypeAndStatus(type, status, pageable);
-        return moviePage;
+        return movieRepository.findByTypeAndStatus(type, status, pageable);
     }
 
+    /**
+     * Lấy chi tiết phim dựa trên id và slug
+     */
     public Movie findMovieDetails(Integer id, String slug) {
         return movieRepository.findByIdAndSlugAndStatus(id, slug, true);
     }
 
+    /**
+     * Lấy tất cả phim với phân trang
+     */
     public Page<Movie> getAllMovies(Integer page, Integer pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by("createdAt").descending());
         return movieRepository.findAll(pageable);
     }
 
+    /**
+     * Tạo mới một bộ phim
+     */
     public Movie createMovie(UpsertMovieRequest request) {
         Slugify slugify = Slugify.builder().build();
+
         Country country = countryRepository.findById(request.getCountryId())
                 .orElseThrow(() -> new NotFoundException("Quốc gia không tồn tại"));
 
@@ -66,13 +83,18 @@ public class MovieService {
                 .actors(actorRepository.findAllById(request.getActorIds()))
                 .directors(directorRepository.findAllById(request.getDirectorIds()))
                 .build();
+
         return movieRepository.save(movie);
     }
 
+    /**
+     * Cập nhật một bộ phim
+     */
     public Movie updateMovie(Integer id, UpsertMovieRequest request) {
         Slugify slugify = Slugify.builder().build();
+
         Movie movie = movieRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy phim với id " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy phim với id: " + id));
 
         Country country = countryRepository.findById(request.getCountryId())
                 .orElseThrow(() -> new NotFoundException("Quốc gia không tồn tại"));
@@ -90,12 +112,24 @@ public class MovieService {
         movie.setGenres(genreRepository.findAllById(request.getGenreIds()));
         movie.setActors(actorRepository.findAllById(request.getActorIds()));
         movie.setDirectors(directorRepository.findAllById(request.getDirectorIds()));
+
         return movieRepository.save(movie);
     }
 
+    /**
+     * Xóa một bộ phim
+     */
     public void deleteMovie(Integer id) {
         Movie movie = movieRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Không tìm thấy phim với id " + id));
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy phim với id: " + id));
         movieRepository.delete(movie);
+    }
+
+    /**
+     * Tìm phim theo id (dùng cho toggle favorite, review, chi tiết phim, v.v.)
+     */
+    public Movie findById(Integer id) {
+        return movieRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy phim với id: " + id));
     }
 }
